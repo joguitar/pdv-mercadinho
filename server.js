@@ -8,9 +8,12 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Conexão automática com o banco PostgreSQL na nuvem (Supabase via Render)
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+    host: '://supabase.com',
+    port: 5432,
+    database: 'postgres',
+    user: 'postgres.amkfzpkijyxhkuosvjeu',
+    password: process.env.DB_PASSWORD || 'mercadinho2012',
     ssl: { rejectUnauthorized: false }
 });
 
