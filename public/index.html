@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Vendas - Mercadinho Pro</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Contêiner de Notificações Flutuantes (Toasts) -->
+    <div id="toast-container" class="nao-imprimir"></div>
+
+    <header>
+        <h1>🏪 PDV MERCADINHO PINHEIRO</h1>
+        <div class="menu-abas nao-imprimir">
+            <button id="btn-caixa" class="aba-btn ativa">🛒 PDV CAIXA</button>
+            <button id="btn-gestao" class="aba-btn">📊 PAINEL DO GESTOR</button>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- ==========================================================================
+             ABA 1: FRENTE DE CAIXA (PDV)
+             ========================================================================== -->
+        <section id="aba-caixa" class="aba-conteudo">
+            <div class="coluna-esquerda">
+                <div class="card tabela-container">
+                    <h2>📦 Estoque Pronta Entrega</h2>
+                    <input type="text" id="busca-produto" class="campo-busca"
+                        placeholder="🔍 Pesquisar por nome ou BIPE o código de barras...">
+
+                    <div id="painel-produto-destaque" class="card"
+                        style="display: none; background: #111827; border: 1px solid #374151; padding: 20px; margin-bottom: 15px;">
+                        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 15px; align-items: center;">
+                            <div>
+                                <label style="color: #38bdf8; font-size: 0.8rem;">Produto Selecionado</label>
+                                <h3 id="destaque-nome"
+                                    style="font-size: 1.6rem; color: #ffffff; font-weight: bold; text-transform: uppercase;">
+                                    --</h3>
+                            </div>
+                            <div>
+                                <label>Preço Unitário</label>
+                                <h4 id="destaque-preco-uni"
+                                    style="font-size: 1.4rem; color: #a855f7; font-family: monospace;">R$ 0,00</h4>
+                            </div>
+                            <div>
+                                <label>Subtotal Item</label>
+                                <h4 id="destaque-preco-total"
+                                    style="font-size: 1.6rem; color: #4ade80; font-family: monospace; font-weight: bold;">
+                                    R$ 0,00</h4>
+                            </div>
+                        </div>
+                        <div
+                            style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 15px; margin-top: 15px; align-items: end;">
+                            <div>
+                                <label style="color: #9ca3af;">Quantidade (un)</label>
+                                <input type="number" id="destaque-qtd" value="1" min="1"
+                                    style="font-size: 1.3rem; font-weight: bold; text-align: center; background: #0b0f19; color: #ffffff; border: 2px solid #374151; padding: 8px;">
+                            </div>
+                            <button id="btn-confirmar-add" class="btn-pdv"
+                                style="height: 48px; background: #2563eb; font-size: 1.1rem;">🛒 Confirmar Item
+                                (Enter)</button>
+                        </div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Produto</th>
+                                <th>Preço</th>
+                                <th>Estoque</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="produtos-lista">
+                            <!-- Injeção via JavaScript -->
+                        </tbody>
+                    </table>
+                    <!-- Paginação Caixa -->
+                    <div class="paginacao-container nao-imprimir"
+                        style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; flex-shrink: 0;">
+                        <button id="btn-anterior-caixa" class="btn-filto-tempo">⬅️ Anterior</button>
+                        <span id="info-paginas-caixa"
+                            style="font-size: 0.85rem; font-weight: bold; color: #64748b;">Página 1 de 1</span>
+                        <button id="btn-proximo-caixa" class="btn-filto-tempo">Próximo ➡️</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="coluna-direita pdv-box">
+                <!-- Cupom Fiscal Bobina Térmica -->
+                <div class="card cupom-fiscal">
+
+                    <!-- Novo Formato de Lista Baseado em Grid (Divs) -->
+                    <div class="cupom-itens-container">
+                        <div class="cupom-item-linha cabecalho-cupom">
+                            <span>ITEM</span>
+                            <span style="text-align: center;">QTD</span>
+                            <span style="text-align: right;">TOTAL</span>
+                        </div>
+                        <div class="divisor-recibo">----------------------------------</div>
+                        <div id="carrinho-lista">
+                            <!-- Injeção via JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- SUBSTITUA O BLOCO .recibo-footer INTEGRALMENTE POR ESTE NO SEU INDEX.HTML: -->
+
+
+                </div>
+
+                <!-- Painel Escuro de Totais e Fechamento -->
+                <div class="totais-caixa nao-imprimir">
+                    <div class="linha-total">
+                        <span>Total do Cupom:</span>
+                        <strong id="total-venda">R$ 0.00</strong>
+                    </div>
+                    <div class="linha-total" style="font-size: 0.85rem; color: #94a3b8;">
+                        <span>Subtotal bruto:</span>
+                        <span id="subtotal-venda">R$ 0.00</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px;">
+                        <div>
+                            <label>Desconto (%)</label>
+                            <input type="number" id="desconto" value="0" min="0" max="100">
+                        </div>
+                        <div>
+                            <label>Forma de Pagamento</label>
+                            <select id="forma-pagamento">
+                                <option value="Dinheiro">💵 Dinheiro</option>
+                                <option value="Pix">⚡ Pix</option>
+                                <option value="Cartão">💳 Cartão Crédito/Débito</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="valores-dinheiro" style="margin-top: 5px;">
+                        <label>Valor Recebido (R$)</label>
+                        <input type="text" id="pago" placeholder="Ex: 50,00">
+                    </div>
+                    <div class="troco">Troco ao Cliente: <span id="troco-valor">R$ 0.00</span></div>
+                    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px; margin-top: 5px;">
+                        <button id="btn-cancelar" class="btn-pdv" style="background-color: #ef4444;"
+                            title="Cancelar venda atual (ESC)">✖ Cancelar (ESC)</button>
+                        <button id="btn-finalizar" class="btn-pdv">Finalizar Venda e Imprimir (F8)</button>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+        <!-- ==========================================================================
+             ABA 2: RETAGUARDA E GERENCIAMENTO (GESTOR)
+             ========================================================================== -->
+        <section id="aba-gestao" class="aba-conteudo" style="display: none; width: 100%; grid-column: span 2;">
+            <!-- Entrada/Cadastro de Mercadorias -->
+            <div class="card">
+                <h2>🛒 Entrada de Mercadorias (Nota Distribuidor)</h2>
+                <form id="produto-form"
+                    style="display: grid; grid-template-columns: 2fr 1.2fr 1fr 1fr 1fr 1fr; gap: 10px; align-items: end;">
+                    <div>
+                        <label>Nome do Produto</label>
+                        <input type="text" id="nome-cadastro" placeholder="Ex: Óleo de Soja 900ml" required>
+                    </div>
+                    <div>
+                        <label>Código de Barras</label>
+                        <input type="text" id="codigo-barras-cadastro" placeholder="Bipe ou digite o código">
+                    </div>
+                    <div>
+                        <label>Preço Custo (R$)</label>
+                        <input type="number" id="preco_custo" step="0.01" placeholder="Custo NF" required>
+                    </div>
+                    <div>
+                        <label>Margem (%)</label>
+                        <input type="number" id="margem" placeholder="Ex: 30" value="30" min="0" required>
+                    </div>
+                    <div>
+                        <label>Qtd Recebida</label>
+                        <input type="number" id="quantidade" placeholder="Qtd" required>
+                    </div>
+                    <div>
+                        <label>Alerta Mínimo</label>
+                        <input type="number" id="estoque-minimo-cadastro" value="5" min="1" required>
+                    </div>
+                    <button type="submit" class="btn-sucesso" style="height: 40px; margin-bottom: 2px;">Salvar
+                        Item</button>
+                </form>
+            </div>
+
+            <!-- Dashboard de Desempenho Financeiro -->
+            <div class="card container-relatorio">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>📈 Painel de Performance de Lucros</h2>
+                    <div class="filtro-tempo-container">
+                        <button id="filtro-geral" class="btn-filto-tempo ativa">Geral</button>
+                        <button id="filtro-mes" class="btn-filto-tempo">Últimos 30 dias</button>
+                        <button id="filtro-semana" class="btn-filto-tempo">Últimos 7 dias</button>
+                        <div class="filtro-tempo-container">
+                            <button id="filtro-hoje" class="btn-filto-tempo">Hoje</button>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="cards-faturamento">
+                    <div class="mini-card azul">
+                        <h3>Qtd Vendas</h3>
+                        <p id="rel-qtd-vendas">0</p>
+                    </div>
+                    <div class="mini-card verde">
+                        <h3>Faturamento Bruto</h3>
+                        <p id="rel-faturamento-total">R$ 0,00</p>
+                    </div>
+                    <div class="mini-card lucro-box">
+                        <h3>Lucro Líquido Real</h3>
+                        <p id="rel-lucro-liquido">R$ 0,00</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gestao-layout-duplo">
+
+
+                <div class="card tabela-container">
+                    <h2>📋 Lista Geral de Produtos para Edição</h2>
+                    <input type="text" id="busca-produto-gestao" class="campo-busca"
+                        placeholder="🔍 Pesquisar produto para editar ou deletar...">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Produto</th>
+                                <th>Custo</th>
+                                <th>Preço Venda</th>
+                                <th>Estoque</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="produtos-gestao-lista">
+                            <!-- Injeção via JavaScript -->
+                        </tbody>
+                    </table>
+                    <div class="paginacao-container"
+                        style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; flex-shrink: 0;">
+                        <button id="btn-anterior-gestao" class="btn-filto-tempo">⬅️ Anterior</button>
+                        <span id="info-paginas-gestao"
+                            style="font-size: 0.85rem; font-weight: bold; color: #64748b;">Página
+                            1 de 1</span>
+                        <button id="btn-proximo-gestao" class="btn-filto-tempo">Próximo ➡️</button>
+                    </div>
+                </div>
+
+                <div class="card container-relatorio">
+                    <h2>📜 Histórico Recente de Cupons Fiscais Emitidos</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID Venda</th>
+                                <th>Data / Hora</th>
+                                <th>Forma PGTO</th>
+                                <th>Total Líquido</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rel-historico-lista">
+                            <!-- Injeção via JavaScript -->
+                        </tbody>
+                    </table>
+
+
+                    <!-- Certifique-se de que NÃO exista um h2 extra antes desta div abaixo -->
+                    <div class="paginacao-container"
+                        style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; flex-shrink: 0;">
+                        <button id="btn-anterior-vendas" class="btn-filto-tempo">⬅️ Anterior</button>
+                        <span id="info-paginas-vendas"
+                            style="font-size: 0.85rem; font-weight: bold; color: #64748b;">Página 1 de 1</span>
+                        <button id="btn-proximo-vendas" class="btn-filto-tempo">Próximo ➡️</button>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="modal-editar" class="modal-sobreposicao" style="display: none;">
+        <div class="modal-conteudo">
+            <div class="modal-header">
+                <h2>✏️ Atualizar Dados do Produto</h2>
+                <button type="button" class="btn-fechar-modal" onclick="fecharModalEditar()">✕</button>
+            </div>
+            <form id="form-editar-modal" style="display: flex; flex-direction: column; gap: 15px; margin-top: 15px;">
+                <input type="hidden" id="edit-id">
+                <div>
+                    <label>Nome do Produto</label>
+                    <input type="text" id="edit-nome" required>
+                </div>
+                <div>
+                    <label>Código de Barras</label>
+                    <input type="text" id="edit-codigo-barras">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div>
+                        <label>Preço Custo (R$)</label>
+                        <input type="number" id="edit-custo" step="0.01" required>
+                    </div>
+                    <div>
+                        <label>Margem (%)</label>
+                        <input type="number" id="edit-margem" min="0" required>
+                    </div>
+                </div>
+                <div>
+                    <label>Quantidade em Estoque</label>
+                    <input type="number" id="edit-quantidade" required>
+                </div>
+                <div>
+                    <label>Estoque Mínimo (Alerta)</label>
+                    <input type="number" id="edit-estoque-minimo" min="1" required>
+                </div>
+                <button type="submit" class="btn-sucesso" style="width: 100%; margin-top: 10px; height: 45px;">Salvar
+                    Alterações</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         CUPOM IMPRESSO MESTRE (ISOLADO PARA EVITAR EMISSÃO EM BRANCO)
+         ========================================================================== -->
+    <div id="cupom-impressao-mestre" class="somente-impressao">
+
+        <div class="divisor-recibo">----------------------------------</div>
+
+        <div class="cupom-itens-container">
+            <div class="cupom-item-linha cabecalho-cupom">
+                <span>ITEM</span>
+                <span style="text-align: center;">QTD</span>
+                <span style="text-align: right;">TOTAL</span>
+            </div>
+            <div class="divisor-recibo">----------------------------------</div>
+            <div id="print-mestre-itens"></div>
+        </div>
+
+        <div class="recibo-footer">
+            <div class="divisor-recibo">----------------------------------</div>
+            <div class="recibo-linha"><span>SUBTOTAL:</span><span id="print-mestre-subtotal">R$ 0.00</span></div>
+            <div class="recibo-linha"><span>DESCONTO:</span><span id="print-mestre-desconto">R$ 0.00</span></div>
+            <div class="recibo-linha total-destaque"><span>TOTAL COMPRA:</span><span id="print-mestre-total">R$
+                    0.00</span></div>
+            <div class="recibo-linha"><span>VALOR RECEBIDO:</span><span id="print-mestre-pago">R$ 0.00</span></div>
+            <div class="recibo-linha"><span>VALOR DO TROCO:</span><span id="print-mestre-troco">R$ 0.00</span></div>
+            <div class="recibo-linha"><span style="font-size: 0.8rem; font-weight: bold;">FORMA PGTO:</span><span
+                    id="print-mestre-forma">--</span></div>
+            <div class="divisor-recibo">----------------------------------</div>
+            <p style="text-align: center; font-size: 0.75rem; font-family: monospace; margin-top: 5px;">OBRIGADO PELA
+                PREFERENCIA!</p>
+        </div>
+    </div>
+
+
+    <script src="script.js"></script>
+</body>
+
+</html>

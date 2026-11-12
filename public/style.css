@@ -1,0 +1,795 @@
+/* ==========================================================================
+   INTERFACES FUTURISTAS PANORÂMICAS - DISTRIBUIÇÃO COMPLETA DA TELA (100%)
+   ========================================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+    background-color: #0b0f19;
+    /* Fundo escuro fosco de alta tecnologia */
+    color: #f1f5f9;
+    height: 100vh;
+    overflow: hidden;
+    /* Trava a rolagem externa geral */
+    display: flex;
+    flex-direction: column;
+}
+
+header {
+    background: #111827;
+    padding: 14px 0 0 0;
+    border-bottom: 1px solid #1f2937;
+    flex-shrink: 0;
+}
+
+header h1 {
+    font-size: 1.4rem;
+    text-align: center;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #38bdf8;
+    /* Azul Neon */
+    margin-bottom: 12px;
+}
+
+/* ==========================================================================
+   MENU DE NAVEGAÇÃO (ABAS ESTILO NEON)
+   ========================================================================== */
+.menu-abas {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0 20px;
+}
+
+.aba-btn {
+    background: transparent;
+    color: #6b7280;
+    border: none;
+    padding: 10px 24px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 8px 8px 0 0;
+    transition: all 0.2s ease;
+}
+
+.aba-btn:hover {
+    color: #9ca3af;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.aba-btn.ativa {
+    color: #38bdf8;
+    background: #1f2937;
+    border-top: 2px solid #38bdf8;
+}
+
+/* ==========================================================================
+   CONTEINER PANORÂMICO REVISADO (REMOVE OS ESPAÇOS VAZIOS LATERAIS)
+   ========================================================================== */
+.container {
+    width: 100%;
+    max-width: 100%;
+    margin: 15px 0 0 0;
+    padding: 0 20px;
+    flex: 1;
+    min-height: 0;
+    height: calc(100vh - 105px);
+    display: flex;
+}
+
+/* Garante o grid expandido de tela cheia para o Caixa */
+#aba-caixa {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    /* Mais peso para o estoque, eliminando os vãos */
+    gap: 25px;
+    width: 100%;
+    height: 100%;
+}
+
+.coluna-esquerda,
+.coluna-direita {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    width: 100%;
+}
+
+.card {
+    background: #1f2937;
+    /* Cinza grafite premium */
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid #374151;
+    margin-bottom: 15px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.card h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #f3fafc;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #374151;
+    padding-bottom: 8px;
+    flex-shrink: 0;
+}
+
+/* ==========================================================================
+   TABELAS DE PRODUTOS MODERNIZADAS
+   ========================================================================== */
+.card.tabela-container {
+    height: 100%;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.tabela-container table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    flex: 1;
+}
+
+th {
+    background-color: #111827;
+    color: #9ca3af;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 12px 16px;
+    border-bottom: 2px solid #374151;
+}
+
+td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #374151;
+    font-size: 0.95rem;
+    color: #e5e7eb;
+    vertical-align: middle;
+}
+
+tr:hover td {
+    background-color: #2563eb12;
+}
+
+/* Distribuição harmônica das colunas */
+#aba-caixa .tabela-container th:nth-child(1),
+#aba-caixa .tabela-container td:nth-child(1) {
+    width: 55%;
+}
+
+#aba-caixa .tabela-container th:nth-child(2),
+#aba-caixa .tabela-container td:nth-child(2) {
+    width: 15%;
+}
+
+#aba-caixa .tabela-container th:nth-child(3),
+#aba-caixa .tabela-container td:nth-child(3) {
+    width: 15%;
+}
+
+#aba-caixa .tabela-container th:nth-child(4),
+#aba-caixa .tabela-container td:nth-child(4) {
+    width: 15%;
+    text-align: center;
+}
+
+/* ==========================================================================
+   INPUTS, SELETORES E CAMPOS DE BUSCA PREMIUM
+   ========================================================================== */
+.campo-busca {
+    width: 100%;
+    padding: 14px 18px;
+    margin-bottom: 15px;
+    border: 1px solid #4b5563;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #ffffff;
+    background-color: #111827;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.campo-busca:focus {
+    outline: none;
+    border-color: #38bdf8;
+    background-color: #111827;
+    box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15);
+}
+
+input[type="text"],
+input[type="number"],
+select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #4b5563;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    background: #111827;
+    color: #ffffff;
+}
+
+input:focus,
+select:focus {
+    outline: none;
+    border-color: #38bdf8;
+}
+
+label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #9ca3af;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ==========================================================================
+   BOTÕES DE AÇÃO DO ESTOQUE
+   ========================================================================== */
+.btn-add {
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background 0.2s;
+}
+
+.btn-add:hover {
+    background-color: #1d4ed8;
+}
+
+.btn-sucesso {
+    background-color: #10b981;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+}
+
+.btn-sucesso:hover {
+    background-color: #059669;
+}
+
+/* ==========================================================================
+   PAINEL DO CAIXA E CUPOM FISCAL AMPLIADO (DARK PREMIUM)
+   ========================================================================== */
+.pdv-box {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    height: 100%;
+    max-height: 100%;
+    min-height: 0;
+    width: 100%;
+}
+
+.cupom-fiscal {
+    background: #fffdf0;
+    border: 1px dashed #cbd5e1;
+    padding: 20px;
+    border-radius: 12px;
+    color: #000000;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    width: 100% !important;
+}
+
+.recibo-header {
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.recibo-header h2 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 2px;
+    color: #000;
+    border: none;
+    padding: 0;
+}
+
+.recibo-header p {
+    font-size: 0.8rem;
+    color: #333;
+    font-family: monospace;
+}
+
+.divisor-recibo {
+    color: #000;
+    margin: 4px 0;
+    font-family: monospace;
+    font-weight: bold;
+    text-align: center;
+    flex-shrink: 0;
+    font-size: 1rem;
+}
+
+.cupom-itens-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow-y: auto;
+    margin: 5px 0;
+    min-height: 0;
+}
+
+.cupom-item-linha {
+    display: grid;
+    grid-template-columns: 3fr 1fr 1fr;
+    font-family: 'Courier New', Courier, monospace !important;
+    font-size: 0.95rem;
+    color: #000000 !important;
+    padding: 6px 0;
+    align-items: center;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.cupom-item-linha span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cabecalho-cupom {
+    font-weight: bold;
+    font-size: 0.9rem;
+    border-bottom: 1px dashed #000;
+    padding-bottom: 4px;
+    flex-shrink: 0;
+}
+
+.recibo-footer {
+    flex-shrink: 0;
+}
+
+.recibo-linha {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    margin: 2px 0;
+    font-family: monospace;
+}
+
+.total-destaque {
+    font-weight: bold;
+    font-size: 1.05rem;
+}
+
+/* ==========================================================================
+   RODAPÉ ESCURO DE FECHAMENTO (DISPLAY DO CAIXA ELETRÔNICO PRO)
+   ========================================================================== */
+.totais-caixa {
+    background: #111827;
+    /* Preto absoluto de fundo de terminal */
+    color: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #374151;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex-shrink: 0;
+    width: 100%;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+}
+
+.linha-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1rem;
+    color: #9ca3af;
+}
+
+/* TOTAL GIGANTE - FOCO ABSOLUTO NA VENDA */
+.linha-total strong {
+    font-size: 2.2rem;
+    color: #38bdf8;
+    /* Azul Neon Intenso */
+    text-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+    font-family: monospace;
+}
+
+.valores-dinheiro {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.valores-dinheiro input {
+    background: #0b0f19;
+    border: 2px solid #374151;
+    color: #4ade80;
+    /* Texto digitado verde neon */
+    font-size: 1.5rem;
+    font-weight: 700;
+    padding: 10px 14px;
+    text-align: right;
+    font-family: monospace;
+}
+
+.valores-dinheiro input:focus {
+    border-color: #4ade80;
+    box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.1);
+}
+
+.troco {
+    font-size: 1.05rem;
+    color: #9ca3af;
+    font-weight: 600;
+}
+
+.troco span {
+    color: #4ade80;
+    /* Troco verde neon */
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.btn-pdv {
+    width: 100%;
+    padding: 14px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    color: white;
+    background-color: #10b981;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.btn-pdv:hover {
+    background-color: #059669;
+}
+
+.btn-pdv:active {
+    transform: scale(0.98);
+}
+
+/* ==========================================================================
+   ELEMENTOS DE GESTÃO LADO A LADO REVISADO
+   ========================================================================== */
+#aba-gestao {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    padding-bottom: 20px;
+}
+
+.gestao-layout-duplo {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 20px;
+    align-items: stretch;
+    width: 100%;
+    margin-top: 5px;
+}
+
+.gestao-layout-duplo .card {
+    margin-bottom: 0 !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+}
+
+.gestao-layout-duplo table {
+    flex: 1;
+    margin-bottom: 10px;
+}
+
+.paginacao-container {
+    flex-shrink: 0;
+}
+
+.cards-faturamento {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.mini-card {
+    padding: 18px;
+    border-radius: 10px;
+    color: white;
+}
+
+.mini-card h3 {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    opacity: 0.75;
+    margin-bottom: 4px;
+}
+
+.mini-card p {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.azul {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%);
+    border: 1px solid #3b82f6;
+}
+
+.verde {
+    background: linear-gradient(135deg, #064e3b 0%, #047857 100%);
+    border: 1px solid #10b981;
+}
+
+.lucro-box {
+    background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 100%);
+    border: 1px solid #8b5cf6;
+}
+
+.filtro-tempo-container {
+    display: flex;
+    gap: 4px;
+    background: #111827;
+    padding: 4px;
+    border-radius: 6px;
+    border: 1px solid #374151;
+}
+
+.btn-filto-tempo {
+    background: transparent;
+    color: #9ca3af;
+    border: none;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.btn-filto-tempo.ativo {
+    background: #1f2937;
+    color: #38bdf8;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* BARRA DE ROLAGEM SUTIL DO TERMINAL */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0b0f19;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #374151;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #4b5563;
+}
+
+/* MODAL E TOASTS */
+.modal-sobreposicao {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(3, 7, 18, 0.8);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.modal-conteudo {
+    background: #1f2937;
+    width: 100%;
+    max-width: 450px;
+    padding: 24px;
+    border-radius: 12px;
+    border: 1px solid #374151;
+    color: #ffffff;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #374151;
+    padding-bottom: 12px;
+}
+
+.modal-header h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+}
+
+.btn-fechar-modal {
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    color: #9ca3af;
+    cursor: pointer;
+}
+
+.btn-fechar-modal:hover {
+    color: #ef4444;
+}
+
+#toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 10000;
+}
+
+.toast {
+    background: #1f2937;
+    color: #ffffff;
+    padding: 14px 18px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    min-width: 280px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-left: 5px solid #cbd5e1;
+    animation: toastSlideIn 0.3s ease;
+}
+
+.toast.sucesso {
+    border-left-color: #10b981;
+}
+
+.toast.erro {
+    border-left-color: #ef4444;
+}
+
+@keyframes toastSlideIn {
+    from {
+        transform: translateX(120%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes toastFadeOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+}
+
+/* ==========================================================================
+   REGRAS EXCLUSIVAS DE IMPRESSÃO MESTRE (PAPEL)
+   ========================================================================== */
+/* ==========================================================================
+   DESTAQUE EXCLUSIVO PARA O TOTAL DA COMPRA (DESCOLADO DOS ITENS)
+   ========================================================================== */
+.totais-caixa .linha-total:first-child,
+.visor-total-geral {
+    background: #0b0f19;
+    border: 2px solid #38bdf8;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 15px rgba(56, 189, 248, 0.15);
+}
+
+.totais-caixa .linha-total:first-child span,
+.visor-total-geral span {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.totais-caixa .linha-total:first-child strong,
+.visor-total-geral strong {
+    font-size: 2.5rem;
+    color: #38bdf8;
+    font-family: monospace;
+    letter-spacing: -1px;
+}
+
+.somente-impressao {
+    display: none;
+}
+
+@media print {
+
+    header,
+    main,
+    footer,
+    .card,
+    table,
+    button,
+    input,
+    select,
+    #toast-container,
+    .nao-imprimir,
+    .aba-conteudo {
+        display: none !important;
+    }
+
+    body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: visible !important;
+        height: auto !important;
+    }
+
+    #cupom-impressao-mestre.somente-impressao {
+        display: block !important;
+        width: 76mm !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .cupom-fiscal {
+        border: none !important;
+        background: #ffffff !important;
+        font-family: 'Courier New', Courier, monospace !important;
+    }
+
+    .recibo-header h2,
+    .recibo-header p,
+    .recibo-footer p,
+    .recibo-linha,
+    .cupom-item-linha,
+    .cupom-item-linha * {
+        color: #000000 !important;
+    }
+
+    .divisor-recibo {
+        color: #000000 !important;
+    }
+}
