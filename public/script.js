@@ -1,4 +1,4 @@
-const API_URL = '/api';
+const API_URL = 'https://' + 'pdv-mercadinho' + '://';
 
 
 let paginaPDV = 1;
@@ -172,6 +172,8 @@ function limparCarrinho() {
     renderizarCarrinho();
 }
 
+let ultimoCupomTexto = '';
+
 async function finalizarVenda() {
     if (carrinho.length === 0) {
         alert('Adicione produtos ao carrinho primeiro!');
@@ -183,6 +185,7 @@ async function finalizarVenda() {
     const total = Math.max(0, subtotal - desconto);
     const forma_pagamento = document.getElementById('forma-pagamento').value;
     const valor_recebido = parseFloat(document.getElementById('valor-recebido').value) || total;
+    const troco = Math.max(0, valor_recebido - total);
 
     try {
         const res = await fetch(`${API_URL}/vendas`, {
@@ -192,14 +195,47 @@ async function finalizarVenda() {
         });
 
         if (!res.ok) throw new Error('Erro ao registrar venda');
+        const dadosVenda = await res.json();
 
-        alert('✅ Venda realizada com sucesso!');
+        // Monta o texto do comprovante
+        const dataHora = new Date().toLocaleString('pt-BR');
+        let linhasItens = carrinho.map(i =>
+            `${i.quantidade}x ${i.nome}\n   R$ ${i.preco.toFixed(2)} un. = R$ ${(i.quantidade * i.preco).toFixed(2)}`
+        ).join('\n');
+
+        ultimoCupomTexto =
+            `🏪 *MERCADINHO PINHEIRO*
+Comprovante Não Fiscal #${dadosVenda.vendaId || ''}
+Data: ${dataHora}
+--------------------------------
+${linhasItens}
+--------------------------------
+Subtotal: R$ ${subtotal.toFixed(2)}
+Desconto: R$ ${desconto.toFixed(2)}
+*TOTAL PAGO: R$ ${total.toFixed(2)}*
+Pagamento: ${forma_pagamento}
+${forma_pagamento === 'Dinheiro' ? `Recebido: R$ ${valor_recebido.toFixed(2)}\nTroco: R$ ${troco.toFixed(2)}\n` : ''}--------------------------------
+Obrigado pela preferência!`;
+
+        document.getElementById('texto-cupom').innerText = ultimoCupomTexto;
+        document.getElementById('modal-cupom').style.display = 'flex';
+
         limparCarrinho();
         trocarAba('caixa');
     } catch (err) {
         alert('Erro ao finalizar venda: ' + err.message);
     }
 }
+
+function compartilharWhatsApp() {
+    const url = `https://whatsapp.com{encodeURIComponent(ultimoCupomTexto)}`;
+    window.open(url, '_blank');
+}
+
+function fecharCupom() {
+    document.getElementById('modal-cupom').style.display = 'none';
+}
+
 
 // ================= PAINEL DO GESTOR =================
 async function carregarProdutosGestor(pagina = 1) {
@@ -315,3 +351,51 @@ async function carregarRelatorios(periodo) {
         console.error(err);
     }
 }
+
+// ================= LEITOR DE CÓDIGO DE BARRAS (CÂMERA) =================
+let html5QrCode = null;
+let modoLeitor = 'pdv';
+
+function abrirLeitor(modo) {
+    modoLeitor = modo;
+    document.getElementById('modal-camera').style.display = 'flex';
+
+    html5QrCode = new Html5Qrcode("leitor-camera");
+    html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 150 } },
+        async (codigoLido) => {
+            fecharLeitor();
+            if (modoLeitor === 'cadastro') {
+                document.getElementById('prod-codigo').value = codigoLido;
+                alert('✅ Código capturado: ' + codigoLido);
+            } else {
+                document.getElementById('busca-pdv').value = codigoLido;
+                const res = await fetch(`${API_URL}/produtos?page=1&limit=1&busca=${encodeURIComponent(codigoLido)}`);
+                const data = await res.json();
+                if (data.produtos && data.produtos.length > 0) {
+                    adicionarAoCarrinho(data.produtos[0]);
+                    document.getElementById('busca-pdv').value = '';
+                    carregarProdutosPDV(1);
+                    alert(`✅ Adicionado: ${data.produtos[0].nome}`);
+                } else {
+                    alert('Produto não encontrado para o código: ' + codigoLido);
+                    carregarProdutosPDV(1);
+                }
+            }
+        },
+        () => {}
+    ).catch(err => {
+        alert('Não foi possível abrir a câmera. Verifique a permissão no navegador/app.');
+        fecharLeitor();
+    });
+}
+
+function fecharLeitor() {
+    document.getElementById('modal-camera').style.display = 'none';
+    if (html5QrCode) {
+        html5QrCode.stop().then(() => html5QrCode.clear()).catch(() => {});
+        html5QrCode = null;
+    }
+}
+

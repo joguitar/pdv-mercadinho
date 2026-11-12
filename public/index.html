@@ -1,11 +1,15 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PDV Mercadinho Pinheiro</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com" type="text/javascript"></script>
+
 </head>
+
 <body>
 
     <header class="app-header">
@@ -18,9 +22,12 @@
     <!-- ABA 1: FRENTE DE CAIXA (ESTOQUE E BUSCA) -->
     <main id="tela-caixa" class="tela ativa">
         <div class="card">
-            <div class="busca-box">
-                <input type="text" id="busca-pdv" placeholder="🔍 Buscar produto ou código..." oninput="buscarProdutosPDV()">
+            <div style="display:flex; gap:8px;">
+                <input type="text" id="busca-pdv" placeholder="🔍 Buscar produto ou código..."
+                    oninput="buscarProdutosPDV()">
+                <button class="btn-add" style="height:46px; padding:0 16px;" onclick="abrirLeitor('pdv')">📷</button>
             </div>
+
 
             <div id="lista-produtos-pdv" class="lista-cards">
                 <p class="msg-vazia">Carregando produtos da nuvem...</p>
@@ -61,7 +68,8 @@
 
                 <div id="box-valor-recebido">
                     <label>Valor Recebido (R$):</label>
-                    <input type="number" id="valor-recebido" placeholder="0,00" step="0.01" oninput="atualizarTotaisCarrinho()">
+                    <input type="number" id="valor-recebido" placeholder="0,00" step="0.01"
+                        oninput="atualizarTotaisCarrinho()">
                     <div class="linha-troco">
                         <span>Troco:</span>
                         <strong id="troco-venda">R$ 0,00</strong>
@@ -109,12 +117,17 @@
         <div class="card">
             <h2 id="titulo-form-produto">➕ Cadastrar Produto</h2>
             <input type="hidden" id="prod-id">
-            
+
             <label>Nome do Produto:</label>
             <input type="text" id="prod-nome" placeholder="Ex: Arroz Branco 1kg">
 
             <label>Código de Barras (Opcional):</label>
-            <input type="text" id="prod-codigo" placeholder="Ex: 7896006710016">
+            <div style="display:flex; gap:8px;">
+                <input type="text" id="prod-codigo" placeholder="Ex: 7896006710016">
+                <button class="btn-add" style="height:46px; padding:0 16px;"
+                    onclick="abrirLeitor('cadastro')">📷</button>
+            </div>
+
 
             <div class="grid-2-col">
                 <div>
@@ -139,12 +152,14 @@
             </div>
 
             <button class="btn-primario" onclick="salvarProduto()">💾 Salvar Produto</button>
-            <button id="btn-cancelar-edicao" class="btn-secundario" style="display:none;" onclick="limparFormProduto()">Cancelar Edição</button>
+            <button id="btn-cancelar-edicao" class="btn-secundario" style="display:none;"
+                onclick="limparFormProduto()">Cancelar Edição</button>
         </div>
 
         <div class="card">
             <h2>📦 Gerenciar Estoque</h2>
-            <input type="text" id="busca-gestor" placeholder="🔍 Filtrar estoque..." oninput="carregarProdutosGestor(1)">
+            <input type="text" id="busca-gestor" placeholder="🔍 Filtrar estoque..."
+                oninput="carregarProdutosGestor(1)">
             <div id="lista-produtos-gestor" class="lista-cards"></div>
             <div class="paginacao">
                 <button onclick="mudarPaginaGestor(-1)">⬅ Anterior</button>
@@ -169,7 +184,27 @@
             <small>Gestor</small>
         </button>
     </nav>
+    <!-- MODAL LEITOR DE CÓDIGO DE BARRAS -->
+    <div id="modal-camera" class="modal-overlay" style="display:none;">
+        <div class="modal-box">
+            <h3>📷 Aponte para o Código de Barras</h3>
+            <div id="leitor-camera" style="width:100%; margin:12px 0; border-radius:8px; overflow:hidden;"></div>
+            <button class="btn-perigo" onclick="fecharLeitor()">Fechar Câmera</button>
+        </div>
+    </div>
+
+    <!-- MODAL COMPROVANTE WHATSAPP -->
+    <div id="modal-cupom" class="modal-overlay" style="display:none;">
+        <div class="modal-box">
+            <h3>🧾 Comprovante da Venda</h3>
+            <pre id="texto-cupom" class="cupom-preview"></pre>
+            <button class="btn-primario" onclick="compartilharWhatsApp()">📲 Enviar no WhatsApp</button>
+            <button class="btn-secundario" onclick="fecharCupom()">Fechar</button>
+        </div>
+    </div>
+
 
     <script src="script.js"></script>
 </body>
+
 </html>
