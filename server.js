@@ -9,7 +9,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 const pool = new Pool({
-    host: 'aws-0-us-east-1' + '.pooler.supabase.com',
+    host: 'aws-1-us-east-1' + '.pooler.supabase.com',
     port: 5432,
     database: 'postgres',
     user: 'postgres.amkfzpkijyxhkuosvjeu',
