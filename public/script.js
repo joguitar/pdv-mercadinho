@@ -1,4 +1,4 @@
-const API_URL = '/api';
+const API_URL = 'https://' + 'pdv-mercadinho' + '://';
 
 
 let paginaPDV = 1;
@@ -367,26 +367,34 @@ function abrirLeitor(modo) {
             { facingMode: "environment" },
             { fps: 10, qrbox: { width: 240, height: 140 } },
             async (codigoLido) => {
-                fecharLeitor();
-                if (modoLeitor === 'cadastro') {
-                    document.getElementById('prod-codigo').value = codigoLido;
-                    alert('✅ Código capturado: ' + codigoLido);
-                } else {
-                    document.getElementById('busca-pdv').value = codigoLido;
-                    const res = await fetch(`${API_URL}/produtos?page=1&limit=1&busca=${encodeURIComponent(codigoLido)}`);
-                    const data = await res.json();
-                    if (data.produtos && data.produtos.length > 0) {
-                        adicionarAoCarrinho(data.produtos);
-                        document.getElementById('busca-pdv').value = '';
-                        carregarProdutosPDV(1);
-                        alert(`✅ Adicionado: ${data.produtos.nome}`);
-                    } else {
-                        alert('Produto não encontrado para o código: ' + codigoLido);
-                        carregarProdutosPDV(1);
+                function fecharLeitor() {
+                    // Fecha a janela imediatamente na tela
+                    const modal = document.getElementById('modal-camera');
+                    if (modal) modal.style.display = 'none';
+
+                    // Desliga a câmera nativa (<video>) se estiver ativa
+                    if (typeof intervaloScan !== 'undefined' && intervaloScan) {
+                        clearInterval(intervaloScan);
+                        intervaloScan = null;
+                    }
+                    if (typeof streamCamera !== 'undefined' && streamCamera) {
+                        try {
+                            streamCamera.getTracks().forEach(track => track.stop());
+                        } catch (e) { }
+                        streamCamera = null;
+                    }
+
+                    // Desliga a biblioteca html5QrCode se estiver ativa
+                    if (typeof html5QrCode !== 'undefined' && html5QrCode) {
+                        try {
+                            html5QrCode.stop().then(() => html5QrCode.clear()).catch(() => { });
+                        } catch (e) { }
+                        html5QrCode = null;
                     }
                 }
+
             },
-            () => {}
+            () => { }
         ).catch(err => {
             alert('Erro ao iniciar lente: ' + err);
             fecharLeitor();
