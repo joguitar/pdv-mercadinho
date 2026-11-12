@@ -1,4 +1,7 @@
-const API_URL = 'https://pdv-mercadinho.onrender.com/api';
+const API_URL = window.location.hostname === 'localhost' || window.location.protocol === 'file:'
+    ? 'https://onrender.com'
+    : '/api';
+
 let estoqueLocal = [], carrinho = [], periodoAtual = '', paginaAtualCaixa = 1, paginaAtualGestao = 1;
 let paginaAtualVendas = 1;
 let produtoDestaqueAtual = null;
