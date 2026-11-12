@@ -1,5 +1,4 @@
-const API_URL = 'https://' + 'pdv-mercadinho' + '://';
-fetch('https://onrender.com').catch(() => {});
+const API_URL = 'https://pdv-mercadinho.onrender.com';
 
 let paginaPDV = 1;
 let totalPaginasPDV = 1;
