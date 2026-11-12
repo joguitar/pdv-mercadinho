@@ -1,4 +1,4 @@
-const API_URL = '/api';
+const API_URL = 'https://' + 'pdv-mercadinho' + '://';
 
 
 let paginaPDV = 1;
@@ -360,42 +360,39 @@ function abrirLeitor(modo) {
     modoLeitor = modo;
     document.getElementById('modal-camera').style.display = 'flex';
 
-    html5QrCode = new Html5Qrcode("leitor-camera");
-    html5QrCode.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 250, height: 150 } },
-        async (codigoLido) => {
-            fecharLeitor();
-            if (modoLeitor === 'cadastro') {
-                document.getElementById('prod-codigo').value = codigoLido;
-                alert('✅ Código capturado: ' + codigoLido);
-            } else {
-                document.getElementById('busca-pdv').value = codigoLido;
-                const res = await fetch(`${API_URL}/produtos?page=1&limit=1&busca=${encodeURIComponent(codigoLido)}`);
-                const data = await res.json();
-                if (data.produtos && data.produtos.length > 0) {
-                    adicionarAoCarrinho(data.produtos[0]);
-                    document.getElementById('busca-pdv').value = '';
-                    carregarProdutosPDV(1);
-                    alert(`✅ Adicionado: ${data.produtos[0].nome}`);
+    // Pequeno atraso para garantir que o modal já está visível na tela antes de iniciar o vídeo
+    setTimeout(() => {
+        html5QrCode = new Html5Qrcode("leitor-camera");
+        html5QrCode.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: { width: 240, height: 140 } },
+            async (codigoLido) => {
+                fecharLeitor();
+                if (modoLeitor === 'cadastro') {
+                    document.getElementById('prod-codigo').value = codigoLido;
+                    alert('✅ Código capturado: ' + codigoLido);
                 } else {
-                    alert('Produto não encontrado para o código: ' + codigoLido);
-                    carregarProdutosPDV(1);
+                    document.getElementById('busca-pdv').value = codigoLido;
+                    const res = await fetch(`${API_URL}/produtos?page=1&limit=1&busca=${encodeURIComponent(codigoLido)}`);
+                    const data = await res.json();
+                    if (data.produtos && data.produtos.length > 0) {
+                        adicionarAoCarrinho(data.produtos);
+                        document.getElementById('busca-pdv').value = '';
+                        carregarProdutosPDV(1);
+                        alert(`✅ Adicionado: ${data.produtos.nome}`);
+                    } else {
+                        alert('Produto não encontrado para o código: ' + codigoLido);
+                        carregarProdutosPDV(1);
+                    }
                 }
-            }
-        },
-        () => {}
-    ).catch(err => {
-        alert('Não foi possível abrir a câmera. Verifique a permissão no navegador/app.');
-        fecharLeitor();
-    });
+            },
+            () => {}
+        ).catch(err => {
+            alert('Erro ao iniciar lente: ' + err);
+            fecharLeitor();
+        });
+    }, 300);
 }
 
-function fecharLeitor() {
-    document.getElementById('modal-camera').style.display = 'none';
-    if (html5QrCode) {
-        html5QrCode.stop().then(() => html5QrCode.clear()).catch(() => {});
-        html5QrCode = null;
-    }
-}
+
 
