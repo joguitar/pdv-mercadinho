@@ -13,7 +13,7 @@ const pool = new Pool({
     port: 5432,
     database: 'postgres',
     user: 'postgres.amkfzpkijyxhkuosvjeu',
-    password: process.env.DB_PASSWORD || 'mercadinho2012',
+    password: process.env.DB_PASSWORD || 'mercadinho2612',
     ssl: { rejectUnauthorized: false }
 });
 
