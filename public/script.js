@@ -1,4 +1,4 @@
-const API_URL = 'http://192.168.0.124:3000/api';
+const API_URL = 'https://pdv-mercadinho.onrender.com/api';
 let estoqueLocal = [], carrinho = [], periodoAtual = '', paginaAtualCaixa = 1, paginaAtualGestao = 1;
 let paginaAtualVendas = 1;
 let produtoDestaqueAtual = null;
