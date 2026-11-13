@@ -1,4 +1,4 @@
-const API_URL = '/api';
+const API_URL = 'https://' + 'pdv-mercadinho' + '://';
 
 
 let paginaPDV = 1;
@@ -344,9 +344,12 @@ async function excluirProduto(id) {
     }
 }
 
+let periodoAtualRelatorio = '';
+
 async function carregarRelatorios(periodo) {
+    periodoAtualRelatorio = periodo;
     try {
-        const res = await fetch(`${API_URL}/relatorios?periodo=${periodo}`);
+        const res = await fetch(`${API_URL}/relatorios?periodo=${periodo}&limit=100`);
         const data = await res.json();
         document.getElementById('rel-qtd').innerText = data.resumo.qtd_vendas;
         document.getElementById('rel-faturamento').innerText = `R$ ${data.resumo.faturamento_total.toFixed(2)}`;
@@ -419,6 +422,68 @@ async function processarCodigoLido(codigoLido) {
         }
     }
 }
+// ================= EXPORTAR RELATÓRIO EM EXCEL (.XLSX) =================
+async function baixarRelatorioExcel() {
+    try {
+        const res = await fetch(`${API_URL}/relatorios?periodo=${periodoAtualRelatorio}&limit=1000`);
+        const data = await res.json();
+
+        const nomesPeriodo = {
+            'hoje': 'Hoje',
+            'semana': 'Ultimos_7_Dias',
+            'mes': 'Ultimos_30_Dias',
+            '': 'Geral'
+        };
+        const nomeFiltro = nomesPeriodo[periodoAtualRelatorio] || 'Geral';
+
+        // Aba 1: Resumo Financeiro
+        const dadosResumo = [
+            { Indicador: 'Estabelecimento', Valor: 'Mercadinho Pinheiro' },
+            { Indicador: 'Período Filtrado', Valor: nomeFiltro.replace(/_/g, ' ') },
+            { Indicador: 'Data de Emissão', Valor: new Date().toLocaleString('pt-BR') },
+            { Indicador: 'Quantidade de Vendas', Valor: data.resumo.qtd_vendas },
+            { Indicador: 'Faturamento Bruto (R$)', Valor: parseFloat(data.resumo.faturamento_total.toFixed(2)) },
+            { Indicador: 'Lucro Líquido Real (R$)', Valor: parseFloat(data.resumo.lucro_liquido.toFixed(2)) }
+        ];
+
+        // Aba 2: Lista Detalhada de Vendas
+        const dadosVendas = data.historico.map(v => ({
+            'ID Venda': v.id,
+            'Data e Hora': v.data,
+            'Forma de Pagamento': v.forma_pagamento,
+            'Total da Venda (R$)': parseFloat(parseFloat(v.total).toFixed(2))
+        }));
+
+        // Cria a pasta de trabalho do Excel (.xlsx)
+        const wb = XLSX.utils.book_new();
+        const wsResumo = XLSX.utils.json_to_sheet(dadosResumo);
+        const wsVendas = XLSX.utils.json_to_sheet(dadosVendas.length > 0 ? dadosVendas : [{ Aviso: 'Nenhuma venda neste período' }]);
+
+        // Ajusta largura das colunas automaticamente
+        wsResumo['!cols'] = [{ wch: 28 }, { wch: 25 }];
+        wsVendas['!cols'] = [{ wch: 12 }, { wch: 22 }, { wch: 22 }, { wch: 20 }];
+
+        XLSX.utils.book_append_sheet(wb, wsResumo, 'Resumo Financeiro');
+        XLSX.utils.book_append_sheet(wb, wsVendas, 'Vendas Detalhadas');
+
+        const nomeArquivo = `Relatorio_Mercadinho_${nomeFiltro}.xlsx`;
+
+        // Verifica se está no App Android para compartilhar/salvar nativamente ou baixa direto no navegador
+        if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+            const base64Excel = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
+            const link = document.createElement('a');
+            link.href = `data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,${base64Excel}`;
+            link.download = nomeArquivo;
+            link.click();
+            alert('✅ Planilha gerada! Verifique na pasta Downloads do celular.');
+        } else {
+            XLSX.writeFile(wb, nomeArquivo);
+        }
+    } catch (err) {
+        alert('Erro ao gerar planilha Excel: ' + err.message);
+    }
+}
+
 
 
 
