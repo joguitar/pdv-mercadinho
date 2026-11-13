@@ -210,4 +210,71 @@ app.get('/api/relatorios', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
+// ROTA: EXPORTAR RELATÓRIO EM PLANILHA EXCEL (.CSV)
+app.get('/api/relatorios/excel', async (req, res) => {
+    try {
+        const { periodo } = req.query;
+        let filtroSql = "";
+        let nomePeriodo = "Geral";
+
+        if (periodo === 'hoje') {
+            filtroSql = "WHERE DATE(data_venda) = DATE(NOW() AT TIME ZONE 'America/Fortaleza')";
+            nomePeriodo = "Hoje";
+        } else if (periodo === 'semana') {
+            filtroSql = "WHERE data_venda >= NOW() - INTERVAL '7 days'";
+            nomePeriodo = "Ultimos_7_Dias";
+        } else if (periodo === 'mes') {
+            filtroSql = "WHERE data_venda >= NOW() - INTERVAL '30 days'";
+            nomePeriodo = "Ultimos_30_Dias";
+        }
+
+        const vendasRes = await pool.query(
+            `SELECT COUNT(*) as total_vendas, COALESCE(SUM(total), 0) as faturamento_total FROM vendas ${filtroSql}`
+        );
+
+        const filtroCusto = filtroSql.replace('data_venda', 'v.data_venda');
+        const custosRes = await pool.query(
+            `SELECT COALESCE(SUM(iv.quantidade * iv.preco_custo_unitario), 0) as custo_total 
+             FROM itens_venda iv JOIN vendas v ON iv.venda_id = v.id ${filtroCusto}`
+        );
+
+        const faturamento = parseFloat(vendasRes.rows[0].faturamento_total);
+        const custo = parseFloat(custosRes.rows[0].custo_total);
+        const lucro = faturamento - custo;
+
+        const histRes = await pool.query(
+            `SELECT id, TO_CHAR(data_venda, 'DD/MM/YYYY HH24:MI') as data, total, forma_pagamento 
+             FROM vendas ${filtroSql} ORDER BY id DESC`
+        );
+
+        let linhas = [
+            'RELATORIO FINANCEIRO - MERCADINHO PINHEIRO',
+            `Periodo;${nomePeriodo.replace(/_/g, ' ')}`,
+            `Emitido em;${new Date().toLocaleString('pt-BR', { timeZone: 'America/Fortaleza' })}`,
+            '',
+            'RESUMO FINANCEIRO',
+            'Indicador;Valor',
+            `Quantidade de Vendas;${vendasRes.rows[0].total_vendas}`,
+            `Faturamento Bruto (R$);${faturamento.toFixed(2).replace('.', ',')}`,
+            `Lucro Liquido Real (R$);${lucro.toFixed(2).replace('.', ',')}`,
+            '',
+            'HISTORICO DETALHADO DE VENDAS',
+            'ID Venda;Data e Hora;Forma de Pagamento;Total (R$)'
+        ];
+
+        histRes.rows.forEach(v => {
+            const valor = parseFloat(v.total).toFixed(2).replace('.', ',');
+            linhas.push(`${v.id};${v.data};${v.forma_pagamento};${valor}`);
+        });
+
+        const csvFinal = '\uFEFF' + linhas.join('\n');
+
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename="Relatorio_Mercadinho_${nomePeriodo}.csv"`);
+        res.status(200).send(csvFinal);
+    } catch (err) {
+        res.status(500).send('Erro ao gerar planilha: ' + err.message);
+    }
+});
+
 app.listen(PORT, () => console.log(`Servidor rodando na nuvem na porta ${PORT}`));
