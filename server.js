@@ -168,7 +168,8 @@ app.get('/api/relatorios', async (req, res) => {
         const offset = (page - 1) * limit;
 
         let filtroSql = "";
-        if (periodo === 'hoje') filtroSql = "WHERE DATE(data_venda) = CURRENT_DATE";
+        if (periodo === 'hoje') filtroSql = "WHERE DATE(data_venda) = DATE(NOW() AT TIME ZONE 'America/Fortaleza')";
+
         else if (periodo === 'semana') filtroSql = "WHERE data_venda >= NOW() - INTERVAL '7 days'";
         else if (periodo === 'mes') filtroSql = "WHERE data_venda >= NOW() - INTERVAL '30 days'";
 
