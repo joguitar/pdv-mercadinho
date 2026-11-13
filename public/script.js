@@ -424,13 +424,46 @@ async function processarCodigoLido(codigoLido) {
 }
 // ================= EXPORTAR RELATÓRIO EM EXCEL (.XLSX) =================
 // ================= EXPORTAR PLANILHA EXCEL (.CSV COMPATÍVEL) =================
-function baixarRelatorioExcel() {
-    const periodo = typeof periodoAtualRelatorio !== 'undefined' ? periodoAtualRelatorio : '';
-    const urlDownload = `${API_URL}/relatorios/excel?periodo=${periodo}`;
-    
-    alert('⏳ Gerando planilha do Excel... O download começará em instantes.');
-    window.location.href = urlDownload;
+// ================= EXPORTAR E COMPARTILHAR PLANILHA EXCEL (.CSV) =================
+async function baixarRelatorioExcel() {
+    try {
+        const periodo = typeof periodoAtualRelatorio !== 'undefined' ? periodoAtualRelatorio : '';
+        const res = await fetch(`${API_URL}/relatorios/excel?periodo=${periodo}`);
+        if (!res.ok) throw new Error('Falha ao gerar relatório no servidor');
+
+        const conteudoCsv = await res.text();
+        const nomesPeriodo = {
+            'hoje': 'Hoje',
+            'semana': '7_Dias',
+            'mes': '30_Dias',
+            '': 'Geral'
+        };
+        const nomeFiltro = nomesPeriodo[periodo] || 'Geral';
+        const nomeArquivo = `Relatorio_Mercadinho_${nomeFiltro}.csv`;
+
+        // Cria o arquivo real em memória para compartilhar ou salvar
+        const arquivo = new File([conteudoCsv], nomeArquivo, { type: 'text/csv;charset=utf-8' });
+
+        // 1. Tenta abrir o menu nativo do Android (WhatsApp, Drive, Salvar em...)
+        if (navigator.canShare && navigator.canShare({ files: [arquivo] })) {
+            await navigator.share({
+                title: 'Relatório Financeiro - Mercadinho Pinheiro',
+                text: `Segue em anexo a planilha de vendas (${nomeFiltro}).`,
+                files: [arquivo]
+            });
+            return;
+        }
+
+        // 2. Plano B: Se o aparelho não suportar envio de arquivo direto, abre no navegador Chrome para salvar onde quiser
+        window.open(`${API_URL}/relatorios/excel?periodo=${periodo}`, '_system');
+    } catch (err) {
+        // Ignora se o usuário apenas fechou o menu de compartilhamento
+        if (err.name !== 'AbortError') {
+            window.open(`${API_URL}/relatorios/excel?periodo=${periodo}`, '_system');
+        }
+    }
 }
+
 
 
 
