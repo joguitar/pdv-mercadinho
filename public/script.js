@@ -1,4 +1,4 @@
-const API_URL = '/api';
+const API_URL = 'https://' + 'pdv-mercadinho' + '://';
 
 
 let paginaPDV = 1;
@@ -356,51 +356,67 @@ async function carregarRelatorios(periodo) {
 let html5QrCode = null;
 let modoLeitor = 'pdv';
 
-function abrirLeitor(modo) {
+
+async function abrirLeitor(modo) {
     modoLeitor = modo;
-    document.getElementById('modal-camera').style.display = 'flex';
 
-    // Pequeno atraso para garantir que o modal já está visível na tela antes de iniciar o vídeo
-    setTimeout(() => {
-        html5QrCode = new Html5Qrcode("leitor-camera");
-        html5QrCode.start(
-            { facingMode: "environment" },
-            { fps: 10, qrbox: { width: 240, height: 140 } },
-            async (codigoLido) => {
-                function fecharLeitor() {
-                    // Fecha a janela imediatamente na tela
-                    const modal = document.getElementById('modal-camera');
-                    if (modal) modal.style.display = 'none';
+    try {
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.BarcodeScanner) {
+            const { BarcodeScanner } = window.Capacitor.Plugins;
 
-                    // Desliga a câmera nativa (<video>) se estiver ativa
-                    if (typeof intervaloScan !== 'undefined' && intervaloScan) {
-                        clearInterval(intervaloScan);
-                        intervaloScan = null;
-                    }
-                    if (typeof streamCamera !== 'undefined' && streamCamera) {
-                        try {
-                            streamCamera.getTracks().forEach(track => track.stop());
-                        } catch (e) { }
-                        streamCamera = null;
-                    }
+            // 1. Verifica e instala o módulo do Google se necessário
+            const { available } = await BarcodeScanner.isGoogleBarcodeScannerModuleAvailable();
+            if (!available) {
+                alert('Baixando componente da câmera do Google. Aguarde 10 segundos e toque na câmera novamente.');
+                await BarcodeScanner.installGoogleBarcodeScannerModule();
+                return;
+            }
 
-                    // Desliga a biblioteca html5QrCode se estiver ativa
-                    if (typeof html5QrCode !== 'undefined' && html5QrCode) {
-                        try {
-                            html5QrCode.stop().then(() => html5QrCode.clear()).catch(() => { });
-                        } catch (e) { }
-                        html5QrCode = null;
-                    }
-                }
+            // 2. Pede permissão da câmera
+            const status = await BarcodeScanner.requestPermissions();
+            if (status.camera !== 'granted') {
+                alert('Permissão de câmera negada. Ative nas configurações do app.');
+                return;
+            }
 
-            },
-            () => { }
-        ).catch(err => {
-            alert('Erro ao iniciar lente: ' + err);
-            fecharLeitor();
-        });
-    }, 300);
+            // 3. Abre o leitor nativo em tela cheia
+            // Dentro de abrirLeitor(modo):
+            const resultado = await BarcodeScanner.scan();
+            if (resultado.barcodes && resultado.barcodes.length > 0) {
+                const codigoLido = resultado.barcodes[0].rawValue;
+                processarCodigoLido(codigoLido);
+            }
+
+        } else {
+            const codigoDigitado = prompt('Digite o código de barras:');
+            if (codigoDigitado) processarCodigoLido(codigoDigitado.trim());
+        }
+    } catch (err) {
+        alert('Aviso do leitor: ' + (err.message || JSON.stringify(err)));
+    }
 }
+
+async function processarCodigoLido(codigoLido) {
+    if (modoLeitor === 'cadastro') {
+        document.getElementById('prod-codigo').value = codigoLido;
+        alert('✅ Código capturado: ' + codigoLido);
+    } else {
+        document.getElementById('busca-pdv').value = codigoLido;
+        const res = await fetch(`${API_URL}/produtos?page=1&limit=1&busca=${encodeURIComponent(codigoLido)}`);
+        const data = await res.json();
+        if (data.produtos && data.produtos.length > 0) {
+            adicionarAoCarrinho(data.produtos[0]);
+            document.getElementById('busca-pdv').value = '';
+            carregarProdutosPDV(1);
+            alert(`✅ Adicionado: ${data.produtos[0].nome}`);
+        } else {
+            alert('Produto não encontrado para o código: ' + codigoLido);
+            carregarProdutosPDV(1);
+        }
+    }
+}
+
+
 
 
 
