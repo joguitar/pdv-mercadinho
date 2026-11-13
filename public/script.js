@@ -425,44 +425,53 @@ async function processarCodigoLido(codigoLido) {
 // ================= EXPORTAR RELATÓRIO EM EXCEL (.XLSX) =================
 // ================= EXPORTAR PLANILHA EXCEL (.CSV COMPATÍVEL) =================
 // ================= EXPORTAR E COMPARTILHAR PLANILHA EXCEL (.CSV) =================
+// ================= RELATÓRIO COMPLETO COM WHATSAPP E LINK EXCEL =================
 async function baixarRelatorioExcel() {
     try {
         const periodo = typeof periodoAtualRelatorio !== 'undefined' ? periodoAtualRelatorio : '';
-        const res = await fetch(`${API_URL}/relatorios/excel?periodo=${periodo}`);
-        if (!res.ok) throw new Error('Falha ao gerar relatório no servidor');
+        const res = await fetch(`${API_URL}/relatorios?periodo=${periodo}&limit=500`);
+        if (!res.ok) throw new Error('Falha ao buscar dados do relatório');
 
-        const conteudoCsv = await res.text();
+        const data = await res.json();
         const nomesPeriodo = {
             'hoje': 'Hoje',
-            'semana': '7_Dias',
-            'mes': '30_Dias',
-            '': 'Geral'
+            'semana': 'Últimos 7 Dias',
+            'mes': 'Últimos 30 Dias',
+            '': 'Todo o Período'
         };
-        const nomeFiltro = nomesPeriodo[periodo] || 'Geral';
-        const nomeArquivo = `Relatorio_Mercadinho_${nomeFiltro}.csv`;
+        const tituloPeriodo = nomesPeriodo[periodo] || 'Geral';
+        const dataEmissao = new Date().toLocaleString('pt-BR');
 
-        // Cria o arquivo real em memória para compartilhar ou salvar
-        const arquivo = new File([conteudoCsv], nomeArquivo, { type: 'text/csv;charset=utf-8' });
+        // Monta o resumo detalhado para visualização e WhatsApp
+        let listaVendas = data.historico.map(v =>
+            `• #${v.id} | ${v.data} | ${v.forma_pagamento} | R$ ${parseFloat(v.total).toFixed(2)}`
+        ).join('\n');
 
-        // 1. Tenta abrir o menu nativo do Android (WhatsApp, Drive, Salvar em...)
-        if (navigator.canShare && navigator.canShare({ files: [arquivo] })) {
-            await navigator.share({
-                title: 'Relatório Financeiro - Mercadinho Pinheiro',
-                text: `Segue em anexo a planilha de vendas (${nomeFiltro}).`,
-                files: [arquivo]
-            });
-            return;
-        }
+        if (!listaVendas) listaVendas = 'Nenhuma venda registrada neste período.';
 
-        // 2. Plano B: Se o aparelho não suportar envio de arquivo direto, abre no navegador Chrome para salvar onde quiser
-        window.open(`${API_URL}/relatorios/excel?periodo=${periodo}`, '_system');
+        ultimoCupomTexto =
+`📊 *RELATÓRIO - MERCADINHO PINHEIRO*
+Período: ${tituloPeriodo}
+Emissão: ${dataEmissao}
+--------------------------------
+Vendas: ${data.resumo.qtd_vendas}
+Faturamento: R$ ${data.resumo.faturamento_total.toFixed(2)}
+*LUCRO LÍQUIDO: R$ ${data.resumo.lucro_liquido.toFixed(2)}*
+--------------------------------
+*HISTÓRICO DE VENDAS:*
+${listaVendas}`;
+
+        // Exibe na janela de modal com opção de WhatsApp e link direto da planilha Excel
+        const urlPlanilha = `https://onrender.com{periodo}`;
+        const preview = document.getElementById('texto-cupom');
+        preview.innerHTML = `${ultimoCupomTexto}\n\n<a href="${urlPlanilha}" target="_blank" style="display:block; background:#0284c7; color:#fff; text-align:center; padding:12px; border-radius:8px; text-decoration:none; font-family:sans-serif; font-weight:bold; margin-top:10px;">📥 Abrir / Salvar Planilha Excel (.csv)</a>`;
+
+        document.getElementById('modal-cupom').style.display = 'flex';
     } catch (err) {
-        // Ignora se o usuário apenas fechou o menu de compartilhamento
-        if (err.name !== 'AbortError') {
-            window.open(`${API_URL}/relatorios/excel?periodo=${periodo}`, '_system');
-        }
+        alert('Erro ao carregar relatório: ' + err.message);
     }
 }
+
 
 
 
