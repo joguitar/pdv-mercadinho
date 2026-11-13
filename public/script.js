@@ -424,60 +424,14 @@ async function processarCodigoLido(codigoLido) {
 }
 // ================= EXPORTAR RELATÓRIO EM EXCEL (.XLSX) =================
 // ================= EXPORTAR PLANILHA EXCEL (.CSV COMPATÍVEL) =================
-async function baixarRelatorioExcel() {
-    try {
-        const res = await fetch(`${API_URL}/relatorios?periodo=${periodoAtualRelatorio}&limit=1000`);
-        const data = await res.json();
-
-        const nomesPeriodo = {
-            'hoje': 'Hoje',
-            'semana': 'Ultimos_7_Dias',
-            'mes': 'Ultimos_30_Dias',
-            '': 'Geral'
-        };
-        const nomeFiltro = nomesPeriodo[periodoAtualRelatorio] || 'Geral';
-        const dataEmissao = new Date().toLocaleString('pt-BR');
-
-        // Monta o conteúdo estruturado em colunas separadas por ponto e vírgula (padrão Excel Brasil)
-        let linhas = [];
-        linhas.push('RELATÓRIO FINANCEIRO - MERCADINHO PINHEIRO');
-        linhas.push(`Período;${nomeFiltro.replace(/_/g, ' ')}`);
-        linhas.push(`Data de Emissão;${dataEmissao}`);
-        linhas.push('');
-        linhas.push('RESUMO FINANCEIRO');
-        linhas.push('Indicador;Valor');
-        linhas.push(`Quantidade de Vendas;${data.resumo.qtd_vendas}`);
-        linhas.push(`Faturamento Bruto (R$);${data.resumo.faturamento_total.toFixed(2).replace('.', ',')}`);
-        linhas.push(`Lucro Líquido Real (R$);${data.resumo.lucro_liquido.toFixed(2).replace('.', ',')}`);
-        linhas.push('');
-        linhas.push('HISTÓRICO DETALHADO DE VENDAS');
-        linhas.push('ID Venda;Data e Hora;Forma de Pagamento;Total da Venda (R$)');
-
-        if (data.historico && data.historico.length > 0) {
-            data.historico.forEach(v => {
-                const valorFormatado = parseFloat(v.total).toFixed(2).replace('.', ',');
-                linhas.push(`${v.id};${v.data};${v.forma_pagamento};${valorFormatado}`);
-            });
-        } else {
-            linhas.push('Nenhuma venda registrada neste período');
-        }
-
-        // Adiciona BOM (\uFEFF) para o Excel reconhecer acentos e cedilha perfeitamente
-        const conteudoCsv = '\uFEFF' + linhas.join('\n');
-        const blob = new Blob([conteudoCsv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `Relatorio_Mercadinho_${nomeFiltro}.csv`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    } catch (err) {
-        alert('Erro ao gerar planilha: ' + err.message);
-    }
+function baixarRelatorioExcel() {
+    const periodo = typeof periodoAtualRelatorio !== 'undefined' ? periodoAtualRelatorio : '';
+    const urlDownload = `${API_URL}/relatorios/excel?periodo=${periodo}`;
+    
+    alert('⏳ Gerando planilha do Excel... O download começará em instantes.');
+    window.location.href = urlDownload;
 }
+
 
 
 
