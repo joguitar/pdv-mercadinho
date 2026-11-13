@@ -1,4 +1,4 @@
-const API_URL = '/api';
+const API_URL = 'https://' + 'pdv-mercadinho' + '://';
 
 
 let paginaPDV = 1;
@@ -197,7 +197,6 @@ async function finalizarVenda() {
         if (!res.ok) throw new Error('Erro ao registrar venda');
         const dadosVenda = await res.json();
 
-        // Monta o texto do comprovante
         const dataHora = new Date().toLocaleString('pt-BR');
         let linhasItens = carrinho.map(i =>
             `${i.quantidade}x ${i.nome}\n   R$ ${i.preco.toFixed(2)} un. = R$ ${(i.quantidade * i.preco).toFixed(2)}`
@@ -228,9 +227,14 @@ Obrigado pela preferência!`;
 }
 
 function compartilharWhatsApp() {
-    const url = `https://whatsapp.com{encodeURIComponent(ultimoCupomTexto)}`;
-    window.open(url, '_blank');
+    const textoCodificado = encodeURIComponent(ultimoCupomTexto);
+    window.location.href = `whatsapp://send?text=${textoCodificado}`;
 }
+
+function fecharCupom() {
+    document.getElementById('modal-cupom').style.display = 'none';
+}
+
 
 function fecharCupom() {
     document.getElementById('modal-cupom').style.display = 'none';
