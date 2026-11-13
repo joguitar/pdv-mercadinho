@@ -423,19 +423,9 @@ async function processarCodigoLido(codigoLido) {
     }
 }
 // ================= EXPORTAR RELATÓRIO EM EXCEL (.XLSX) =================
+// ================= EXPORTAR PLANILHA EXCEL (.CSV COMPATÍVEL) =================
 async function baixarRelatorioExcel() {
     try {
-        // Garante que a biblioteca XLSX seja carregada automaticamente se faltar no HTML
-        if (typeof XLSX === 'undefined') {
-            await new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = 'https://cloudflare.com';
-                script.onload = resolve;
-                script.onerror = () => reject(new Error('Falha ao baixar biblioteca do Excel. Verifique sua internet.'));
-                document.head.appendChild(script);
-            });
-        }
-
         const res = await fetch(`${API_URL}/relatorios?periodo=${periodoAtualRelatorio}&limit=1000`);
         const data = await res.json();
 
@@ -446,39 +436,46 @@ async function baixarRelatorioExcel() {
             '': 'Geral'
         };
         const nomeFiltro = nomesPeriodo[periodoAtualRelatorio] || 'Geral';
+        const dataEmissao = new Date().toLocaleString('pt-BR');
 
-        // Aba 1: Resumo Financeiro
-        const dadosResumo = [
-            { Indicador: 'Estabelecimento', Valor: 'Mercadinho Pinheiro' },
-            { Indicador: 'Período Filtrado', Valor: nomeFiltro.replace(/_/g, ' ') },
-            { Indicador: 'Data de Emissão', Valor: new Date().toLocaleString('pt-BR') },
-            { Indicador: 'Quantidade de Vendas', Valor: data.resumo.qtd_vendas },
-            { Indicador: 'Faturamento Bruto (R$)', Valor: parseFloat(data.resumo.faturamento_total.toFixed(2)) },
-            { Indicador: 'Lucro Líquido Real (R$)', Valor: parseFloat(data.resumo.lucro_liquido.toFixed(2)) }
-        ];
+        // Monta o conteúdo estruturado em colunas separadas por ponto e vírgula (padrão Excel Brasil)
+        let linhas = [];
+        linhas.push('RELATÓRIO FINANCEIRO - MERCADINHO PINHEIRO');
+        linhas.push(`Período;${nomeFiltro.replace(/_/g, ' ')}`);
+        linhas.push(`Data de Emissão;${dataEmissao}`);
+        linhas.push('');
+        linhas.push('RESUMO FINANCEIRO');
+        linhas.push('Indicador;Valor');
+        linhas.push(`Quantidade de Vendas;${data.resumo.qtd_vendas}`);
+        linhas.push(`Faturamento Bruto (R$);${data.resumo.faturamento_total.toFixed(2).replace('.', ',')}`);
+        linhas.push(`Lucro Líquido Real (R$);${data.resumo.lucro_liquido.toFixed(2).replace('.', ',')}`);
+        linhas.push('');
+        linhas.push('HISTÓRICO DETALHADO DE VENDAS');
+        linhas.push('ID Venda;Data e Hora;Forma de Pagamento;Total da Venda (R$)');
 
-        // Aba 2: Lista Detalhada de Vendas
-        const dadosVendas = data.historico.map(v => ({
-            'ID Venda': v.id,
-            'Data e Hora': v.data,
-            'Forma de Pagamento': v.forma_pagamento,
-            'Total da Venda (R$)': parseFloat(parseFloat(v.total).toFixed(2))
-        }));
+        if (data.historico && data.historico.length > 0) {
+            data.historico.forEach(v => {
+                const valorFormatado = parseFloat(v.total).toFixed(2).replace('.', ',');
+                linhas.push(`${v.id};${v.data};${v.forma_pagamento};${valorFormatado}`);
+            });
+        } else {
+            linhas.push('Nenhuma venda registrada neste período');
+        }
 
-        const wb = XLSX.utils.book_new();
-        const wsResumo = XLSX.utils.json_to_sheet(dadosResumo);
-        const wsVendas = XLSX.utils.json_to_sheet(dadosVendas.length > 0 ? dadosVendas : [{ Aviso: 'Nenhuma venda neste período' }]);
+        // Adiciona BOM (\uFEFF) para o Excel reconhecer acentos e cedilha perfeitamente
+        const conteudoCsv = '\uFEFF' + linhas.join('\n');
+        const blob = new Blob([conteudoCsv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
 
-        wsResumo['!cols'] = [{ wch: 28 }, { wch: 25 }];
-        wsVendas['!cols'] = [{ wch: 12 }, { wch: 22 }, { wch: 22 }, { wch: 20 }];
-
-        XLSX.utils.book_append_sheet(wb, wsResumo, 'Resumo Financeiro');
-        XLSX.utils.book_append_sheet(wb, wsVendas, 'Vendas Detalhadas');
-
-        const nomeArquivo = `Relatorio_Mercadinho_${nomeFiltro}.xlsx`;
-        XLSX.writeFile(wb, nomeArquivo);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Relatorio_Mercadinho_${nomeFiltro}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
     } catch (err) {
-        alert('Erro ao gerar planilha Excel: ' + err.message);
+        alert('Erro ao gerar planilha: ' + err.message);
     }
 }
 
