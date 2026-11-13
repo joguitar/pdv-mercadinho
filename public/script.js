@@ -1,4 +1,4 @@
-const API_URL = 'https://' + 'pdv-mercadinho' + '://';
+const API_URL = '/api';
 
 
 let paginaPDV = 1;
