@@ -425,6 +425,17 @@ async function processarCodigoLido(codigoLido) {
 // ================= EXPORTAR RELATÓRIO EM EXCEL (.XLSX) =================
 async function baixarRelatorioExcel() {
     try {
+        // Garante que a biblioteca XLSX seja carregada automaticamente se faltar no HTML
+        if (typeof XLSX === 'undefined') {
+            await new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://cloudflare.com';
+                script.onload = resolve;
+                script.onerror = () => reject(new Error('Falha ao baixar biblioteca do Excel. Verifique sua internet.'));
+                document.head.appendChild(script);
+            });
+        }
+
         const res = await fetch(`${API_URL}/relatorios?periodo=${periodoAtualRelatorio}&limit=1000`);
         const data = await res.json();
 
@@ -454,12 +465,10 @@ async function baixarRelatorioExcel() {
             'Total da Venda (R$)': parseFloat(parseFloat(v.total).toFixed(2))
         }));
 
-        // Cria a pasta de trabalho do Excel (.xlsx)
         const wb = XLSX.utils.book_new();
         const wsResumo = XLSX.utils.json_to_sheet(dadosResumo);
         const wsVendas = XLSX.utils.json_to_sheet(dadosVendas.length > 0 ? dadosVendas : [{ Aviso: 'Nenhuma venda neste período' }]);
 
-        // Ajusta largura das colunas automaticamente
         wsResumo['!cols'] = [{ wch: 28 }, { wch: 25 }];
         wsVendas['!cols'] = [{ wch: 12 }, { wch: 22 }, { wch: 22 }, { wch: 20 }];
 
@@ -467,22 +476,12 @@ async function baixarRelatorioExcel() {
         XLSX.utils.book_append_sheet(wb, wsVendas, 'Vendas Detalhadas');
 
         const nomeArquivo = `Relatorio_Mercadinho_${nomeFiltro}.xlsx`;
-
-        // Verifica se está no App Android para compartilhar/salvar nativamente ou baixa direto no navegador
-        if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-            const base64Excel = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
-            const link = document.createElement('a');
-            link.href = `data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,${base64Excel}`;
-            link.download = nomeArquivo;
-            link.click();
-            alert('✅ Planilha gerada! Verifique na pasta Downloads do celular.');
-        } else {
-            XLSX.writeFile(wb, nomeArquivo);
-        }
+        XLSX.writeFile(wb, nomeArquivo);
     } catch (err) {
         alert('Erro ao gerar planilha Excel: ' + err.message);
     }
 }
+
 
 
 
